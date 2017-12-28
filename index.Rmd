@@ -1,11 +1,11 @@
 ---
-title: "Sample plots"
+title: "Waterville (Maine) Temperature Data"
 author: "Manny Gimond"
 date: "December 28, 2017"
 output: 
    html_document:
      toc : TRUE
-     code_folding: hide
+     code_folding: show
 editor_options: 
   chunk_output_type: console
 ---
