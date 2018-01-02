@@ -1,7 +1,7 @@
 ---
 title: "Waterville (Maine) Temperature Data"
 author: "Manny Gimond"
-date: "December 28, 2017"
+date:  "`r format(Sys.time(), '%B %d, %Y')`"
 output: 
    html_document:
      toc : TRUE
@@ -26,7 +26,7 @@ library(dplyr)
 library(lubridate)
 library(ggplot2)
 
-dat <- readRDS("met1991_2016.Rds")
+dat <- readRDS("met1991_2017.Rds")
 summary(dat)
 ```
 
@@ -131,7 +131,7 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
   filter(month %in% c("Feb","May","Aug","Oct")) %>% 
   group_by(month,year)         %>% 
   summarise(percent = mean(missing) * 100,
-            topTemp = median(Temp[percent_rank(Temp) > 0.9], na.rm=TRUE),
+            topTemp = median(Temp[percent_rank(Temp) < 0.1], na.rm=TRUE),
             Temp = ifelse(percent > 30, NA, topTemp)) %>% 
   ggplot() + aes(x=year, y=Temp) +geom_point() +
   facet_grid(month~.,scales="free") + 
