@@ -7,26 +7,28 @@ output:
      toc : TRUE
      code_folding: show
 editor_options: 
-  chunk_output_type: console
+  chunk_output_type: inline
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
-The following are examples of exploratory plots generated from meteorological data for Waterville, Maine (USA). Data were pulled from ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-lite/ then saved in a native R file format named `met1991_2016.Rds` available on this [repo](https://github.com/mgimond/meteo_waterville) using the `Meteo_lite.R` script (also available on this [repo](https://github.com/mgimond/meteo_waterville)).
+The following are examples of exploratory plots generated from meteorological data for Waterville, Maine (USA). Data were pulled from ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-lite/ then saved in a native R file format named `met1991_2018.Rds` available on this [repo](https://github.com/mgimond/meteo_waterville) using the `Meteo_lite.R` script (also available on this [repo](https://github.com/mgimond/meteo_waterville)).
 
 ## Data summary
 
-The dataset spans the years 1991 through 2016. A data summary follows.
+The dataset spans the years 1991 through 2018. A data summary follows.
 
 ```{r message=FALSE}
 library(MASS)
 library(dplyr)
 library(lubridate)
 library(ggplot2)
+```
 
-dat <- readRDS("met1991_2017.Rds")
+```{r}
+dat <- readRDS("met1991_2018.Rds")
 summary(dat)
 ```
 
@@ -42,7 +44,7 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
                monthw = ceiling(day(Date_EST) / 7) ) %>% 
   group_by(month,year,weekday,monthw) %>% 
   summarise(percent = mean(missing) * 100) %>% 
-  ggplot() + aes(monthw, weekday, fill = percent) + 
+  ggplot() + aes( weekday, monthw,fill = percent) + 
   geom_tile(colour = "white") + 
   facet_grid(year~month) + 
   scale_fill_gradient(low="green", high="red") +
@@ -50,10 +52,11 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
         axis.text=element_blank(),
         axis.ticks=element_blank(),
         strip.text=element_text(angle=0),
-        strip.text.y=element_text(angle=0))
+        strip.text.y=element_text(angle=0),
+        panel.spacing = unit(0, "lines"))
 ```
 
-There's clearly a large swath of missing values for the years 1996 through 1999 and for the year 2001.
+There's a large swath of missing values for the years 1996 through 1999 and for the year 2001.
 
 ## Heatmap of temperature data
 
@@ -68,7 +71,7 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
   group_by(month,year,weekday,monthw) %>% 
   summarise(percent = mean(missing) * 100,
             Temp = ifelse(percent > 70, NA, median(Temp, na.rm=TRUE))) %>% 
-  ggplot() + aes(monthw, weekday, fill = Temp) + 
+  ggplot() + aes( weekday,monthw, fill = Temp) + 
   geom_tile(colour = "white") + 
   facet_grid(year~month) + 
   scale_fill_gradient2(low="blue", mid="yellow", high="red",
@@ -76,8 +79,39 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
   theme(axis.title=element_blank(),
         axis.text=element_blank(),
         axis.ticks=element_blank(),
-        strip.text.y=element_text(angle=0))
+        strip.text.y=element_text(angle=0),
+        panel.spacing = unit(0, "lines"))
 ```
+
+
+## Heatmap of normalized temperature data
+
+The following heatmap shows the difference between reported daily median temperature (in degrees Fahrenheit) and the ~30 year median temperature for that day.
+
+```{r fig.height=8,fig.width=8}
+dat %>% mutate(missing = as.numeric(is.na(Temp)),
+               month = month(Date_EST, label=TRUE,abbr=TRUE),
+               year  = year(Date_EST),
+               weekday = wday(Date_EST,label=TRUE),
+               monthw = ceiling(day(Date_EST) / 7) ) %>% 
+  group_by(month,year,weekday,monthw) %>% 
+  summarise(percent = mean(missing) * 100,
+            Temp = ifelse(percent > 70, NA, median(Temp, na.rm=TRUE))) %>%
+  ungroup() %>% 
+  group_by(month,monthw,weekday) %>% 
+  mutate(Temp_anom = Temp - median(Temp, na.rm=TRUE)) %>% 
+  ggplot() + aes( weekday,monthw, fill = Temp_anom) + 
+  geom_tile(colour = "white") + 
+  facet_grid(year~month) + 
+  scale_fill_gradient2(low="blue", mid="white", high="red",
+                       na.value = "grey90", midpoint = 0) +
+  theme(axis.title=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank(),
+        strip.text.y=element_text(angle=0),
+        panel.spacing = unit(0, "lines"))
+```
+
 
 ## Changes in median temperature over the years
 
@@ -141,4 +175,4 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
 ```
 
 -------
-![Copyleft](http://i.creativecommons.org/l/by-sa/4.0/88x31.png) Manuel Gimond, 2017
+![Copyleft](http://i.creativecommons.org/l/by-sa/4.0/88x31.png) Manuel Gimond, 2019
