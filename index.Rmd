@@ -14,11 +14,11 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
-The following are examples of exploratory plots generated from meteorological data for Waterville, Maine (USA). Data were pulled from ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-lite/ then saved in a native R file format named `met1991_2018.Rds` available on this [repo](https://github.com/mgimond/meteo_waterville) using the `Meteo_lite.R` script (also available on this [repo](https://github.com/mgimond/meteo_waterville)).
+The following are examples of exploratory plots generated from meteorological data for Waterville, Maine (USA). Data were pulled from ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-lite/ then saved in a native R file format named `met1991_2019.Rds` available on this [repo](https://github.com/mgimond/meteo_waterville) using the `Meteo_lite.R` script (also available on this [repo](https://github.com/mgimond/meteo_waterville)).
 
 ## Data summary
 
-The dataset spans the years 1991 through 2018. A data summary follows.
+The dataset spans the years 1991 through 2019. A data summary follows.
 
 ```{r message=FALSE}
 library(MASS)
@@ -28,7 +28,7 @@ library(ggplot2)
 ```
 
 ```{r}
-dat <- readRDS("met1991_2018.Rds")
+dat <- readRDS("met1991_2019.Rds")
 summary(dat)
 ```
 
@@ -175,4 +175,4 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
 ```
 
 -------
-![Copyleft](http://i.creativecommons.org/l/by-sa/4.0/88x31.png) Manuel Gimond, 2019
+![Copyleft](http://i.creativecommons.org/l/by-sa/4.0/88x31.png) Manuel Gimond, 2020
