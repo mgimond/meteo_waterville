@@ -113,7 +113,7 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
 ```
 
 
-## Changes in median temperature over the years
+## Changes in median temperature values over the years
 
 The following plots show median monthly temperatures per year. Only months with 30% or fewer missing values are displayed. A resistant straight line and a resistant LOESS curve are fitted to the data.
 
@@ -134,7 +134,7 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
 
 The missing values for the years 1996 through 1999 create a gap in the data which could influence the LOESS curve however, the straight line fit should be resistant to the imbalanced distribution of values.
 
-## Changes in high temperatures over the years
+## Changes in high temperature values over the years
 
 The following plots show the median monthly top 10% temperature values per year. Only months with 30% or fewer missing values are displayed. A resistant straight line and a resistant LOESS curve are fitted to the data.
 
@@ -154,7 +154,7 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
   geom_smooth(method="rlm", colour="red",  se=FALSE, size=0.5) 
 ```
 
-## Changes in low temperatures over the years
+## Changes in low temperature values over the years
 
 The following plots show the median monthly bottom 10% temperature values per year. Only months with 30% or fewer missing values are displayed. A resistant straight line and a resistant LOESS curve are fitted to the data.
 
