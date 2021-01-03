@@ -7,18 +7,18 @@ output:
      toc : TRUE
      code_folding: show
 editor_options: 
-  chunk_output_type: inline
+  chunk_output_type: console
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
-The following are examples of exploratory plots generated from meteorological data for Waterville, Maine (USA). Data were pulled from ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-lite/ then saved in a native R file format named `met1991_2019.Rds` available on this [repo](https://github.com/mgimond/meteo_waterville) using the `Meteo_lite.R` script (also available on this [repo](https://github.com/mgimond/meteo_waterville)).
+The following are examples of exploratory plots generated from meteorological data for Waterville, Maine (USA). Data were pulled from ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-lite/ then saved in a native R file format named `met1991_2020.Rds` available on this [repo](https://github.com/mgimond/meteo_waterville) using the `Meteo_lite.R` script (also available on this [repo](https://github.com/mgimond/meteo_waterville)).
 
 ## Data summary
 
-The dataset spans the years 1991 through 2019. A data summary follows.
+The dataset spans the years 1991 through 2020. A data summary follows.
 
 ```{r message=FALSE}
 library(MASS)
@@ -28,7 +28,7 @@ library(ggplot2)
 ```
 
 ```{r}
-dat <- readRDS("met1991_2019.Rds")
+dat <- readRDS("met1991_2020.Rds")
 summary(dat)
 ```
 
@@ -36,7 +36,7 @@ summary(dat)
 
 With a large temporal dataset, it's always a good idea to scan for missing values. The following plot is a calendar heatmap showing the percentage of missing temperature values. Each block element represents a day.
 
-```{r fig.height=8,fig.width=8}
+```{r fig.height=10,fig.width=8}
 dat %>% mutate(missing = as.numeric(is.na(Temp)),
                month = month(Date_EST, label=TRUE,abbr=TRUE),
                year  = year(Date_EST),
@@ -62,7 +62,7 @@ There's a large swath of missing values for the years 1996 through 1999 and for 
 
 Next, we'll generate a median temperature heatmap (in degrees Fahrenheit) but limit the output to days with fewer than 70% missing values. Days for which more than 70% of values are missing are assigned a grey color.
 
-```{r fig.height=8,fig.width=8}
+```{r fig.height=10,fig.width=8}
 dat %>% mutate(missing = as.numeric(is.na(Temp)),
                month = month(Date_EST, label=TRUE,abbr=TRUE),
                year  = year(Date_EST),
@@ -88,7 +88,7 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
 
 The following heatmap shows the difference between reported daily median temperature (in degrees Fahrenheit) and the ~30 year median temperature for that day.
 
-```{r fig.height=8,fig.width=8}
+```{r fig.height=10,fig.width=8}
 dat %>% mutate(missing = as.numeric(is.na(Temp)),
                month = month(Date_EST, label=TRUE,abbr=TRUE),
                year  = year(Date_EST),
@@ -99,12 +99,14 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
             Temp = ifelse(percent > 70, NA, median(Temp, na.rm=TRUE))) %>%
   ungroup() %>% 
   group_by(month,monthw,weekday) %>% 
-  mutate(Temp_anom = Temp - median(Temp, na.rm=TRUE)) %>% 
-  ggplot() + aes( weekday,monthw, fill = Temp_anom) + 
+  mutate(`Temperature anomaly` = Temp - median(Temp, na.rm=TRUE)) %>% 
+  ggplot() + aes( weekday,monthw, fill = `Temperature anomaly`) + 
   geom_tile(colour = "white") + 
-  facet_grid(year~month) + 
-  scale_fill_gradient2(low="blue", mid="white", high="red",
-                       na.value = "grey90", midpoint = 0) +
+  facet_grid(year ~ month) + 
+  scale_fill_stepsn(colors = c("#455DB5", "#4575B4", "#74ADD1",  
+                               "#FDAE61", "#F46D43", "#D73027") ,
+                    breaks = c(-20, -10, 0, 10, 20),
+                    na.value = "grey90") +
   theme(axis.title=element_blank(),
         axis.text=element_blank(),
         axis.ticks=element_blank(),
@@ -117,19 +119,20 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
 
 The following plots show median monthly temperatures per year. Only months with 30% or fewer missing values are displayed. A resistant straight line and a resistant LOESS curve are fitted to the data.
 
-```{r fig.height=5,fig.width=4}
+```{r fig.height=5,fig.width=7}
 dat %>% mutate(missing = as.numeric(is.na(Temp)),
                month = month(Date_EST, label=TRUE,abbr=TRUE),
-               year  = year(Date_EST)) %>% 
-        filter(month %in% c("Feb","May","Aug","Oct") )%>% 
-        group_by(month,year)         %>% 
+               Year  = year(Date_EST)) %>% 
+#        filter(month %in% c("Feb","May","Aug","Oct") )%>% 
+        group_by(month,Year)         %>% 
         summarise(percent = mean(missing) * 100,
                   Temp = ifelse(percent > 30, NA, median(Temp, na.rm=TRUE))) %>% 
-  ggplot() + aes(x=year, y=Temp) +geom_point() +
-  facet_grid(month~.,scales="free") + 
-  geom_smooth(method="loess", se=FALSE, size=0.5, 
+  ggplot() + aes(x=Year, y=Temp) +geom_point() +
+  facet_wrap(month~., scales="free", ncol = 4) + 
+  geom_smooth(method = "loess", se=FALSE, size=0.5, 
               method.args = list(family="symmetric")) +
-  geom_smooth(method="rlm", colour="red",  se=FALSE, size=0.5) 
+  geom_smooth(method="rlm", colour="red",  se=FALSE, size=0.5) + 
+  ggtitle(expression("Median yearly temperatures (in " * degree * "F)"))
 ```
 
 The missing values for the years 1996 through 1999 create a gap in the data which could influence the LOESS curve however, the straight line fit should be resistant to the imbalanced distribution of values.
@@ -138,41 +141,44 @@ The missing values for the years 1996 through 1999 create a gap in the data whic
 
 The following plots show the median monthly top 10% temperature values per year. Only months with 30% or fewer missing values are displayed. A resistant straight line and a resistant LOESS curve are fitted to the data.
 
-```{r fig.height=5,fig.width=4}
+```{r fig.height=5,fig.width=7}
 dat %>% mutate(missing = as.numeric(is.na(Temp)),
                month = month(Date_EST, label=TRUE,abbr=TRUE),
-               year  = year(Date_EST)) %>% 
-  filter(month %in% c("Feb","May","Aug","Oct")) %>% 
-  group_by(month,year)         %>% 
+               Year  = year(Date_EST)) %>% 
+ # filter(month %in% c("Feb","May","Aug","Oct")) %>% 
+  group_by(month,Year)         %>% 
   summarise(percent = mean(missing) * 100,
             topTemp = median(Temp[percent_rank(Temp) > 0.9], na.rm=TRUE),
             Temp = ifelse(percent > 30, NA, topTemp)) %>% 
-  ggplot() + aes(x=year, y=Temp) +geom_point() +
-  facet_grid(month~.,scales="free") + 
+  ggplot() + aes(x=Year, y=Temp) +geom_point() +
+  facet_wrap(month~., scales="free", ncol = 4) + 
   geom_smooth(method="loess", se=FALSE, size=0.5, 
               method.args = list(family="symmetric")) +
-  geom_smooth(method="rlm", colour="red",  se=FALSE, size=0.5) 
+  geom_smooth(method="rlm", colour="red",  se=FALSE, size=0.5) +
+  ggtitle(expression("Median top 10% temperature (in " * degree * "F)"))
 ```
 
 ## Changes in low temperature values over the years
 
 The following plots show the median monthly bottom 10% temperature values per year. Only months with 30% or fewer missing values are displayed. A resistant straight line and a resistant LOESS curve are fitted to the data.
 
-```{r fig.height=5,fig.width=4}
+```{r fig.height=5,fig.width=7}
 dat %>% mutate(missing = as.numeric(is.na(Temp)),
                month = month(Date_EST, label=TRUE,abbr=TRUE),
-               year  = year(Date_EST)) %>% 
-  filter(month %in% c("Feb","May","Aug","Oct")) %>% 
-  group_by(month,year)         %>% 
+               Year  = year(Date_EST)) %>% 
+ # filter(month %in% c("Feb","May","Aug","Oct")) %>% 
+  group_by(month,Year)         %>% 
   summarise(percent = mean(missing) * 100,
             topTemp = median(Temp[percent_rank(Temp) < 0.1], na.rm=TRUE),
             Temp = ifelse(percent > 30, NA, topTemp)) %>% 
-  ggplot() + aes(x=year, y=Temp) +geom_point() +
-  facet_grid(month~.,scales="free") + 
+  ggplot() + aes(x=Year, y=Temp) +geom_point() +
+  facet_wrap(month~., scales="free", ncol = 4) + 
   geom_smooth(method="loess", se=FALSE, size=0.5, 
               method.args = list(family="symmetric")) +
-  geom_smooth(method="rlm", colour="red",  se=FALSE, size=0.5) 
+  geom_smooth(method="rlm", colour="red",  se=FALSE, size=0.5) +
+  ggtitle(expression("Median bottom 10% temperature (in " * degree * "F)"))
+
 ```
 
 -------
-![Copyleft](http://i.creativecommons.org/l/by-sa/4.0/88x31.png) Manuel Gimond, 2020
+![Copyleft](http://i.creativecommons.org/l/by-sa/4.0/88x31.png) Manuel Gimond, 2021
