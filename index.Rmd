@@ -117,34 +117,48 @@ dat.normalized <- dat %>%
 ```
 
 
-## Sooth of normalized temperature data
+## Smooth of normalized temperature data
 
 The following heatmap applies a loess *smooth* surface  to the data. To avoid edge effects at the beginning and end of each year, the data are wrapped.
 
 ```{r fig.height=10,fig.width=8}
 dat.loess <- dat %>% 
-  select(Date_EST, Temp) %>% 
-  mutate(missing = as.numeric(is.na(Temp)),
-         dec.year = decimal_date(Date_EST),
-         year = round(dec.year),
-         year.frac = dec.year - year)
+  filter(year(Date_EST) > 2002) %>% 
+  mutate(date = as.Date(Date_EST)) %>% 
+  group_by(date) %>% 
+  summarise(temp = median(Temp, na.rm = TRUE)) %>% 
+  ungroup() %>% 
+  mutate(dec.year = decimal_date(date),
+         year = floor(dec.year),
+         day= yday(date)) %>% 
+  select(-dec.year)
 
-dat.smooth <- loess(Temp ~ year + year.frac, dat.loess)
-smooth.df <- data.frame(dat.smooth$x, dat.smooth$fitted)
+# Wrap dates to correct for temporal edge effects
+dat.loess.pre <- dat.loess %>% 
+  filter(day > 250) %>% 
+  mutate(year = year + 1,
+         day = day - 366) 
+
+dat.loess.post <- dat.loess %>% 
+  filter(day < 100) %>% 
+  mutate(year = year - 1,
+         day = day + 366)
+
+
+dat.lowess.wrap <- rbind(dat.loess, dat.loess.pre, dat.loess.post)
+
+dat.smooth <- loess(temp ~ year + day, dat.lowess.wrap, span = 0.1, degree  = 2,
+                    family = "symmetric")
+smooth.df <- data.frame(dat.smooth$x, dat.smooth$fitted) %>% 
+  filter(day > 0 & day < 366)
   
-  ggplot(smooth.df) + aes( year.frac,year, fill = `dat.smooth.fitted`) + 
-  geom_tile() 
-  
-  facet_grid(year ~ month) + 
-  scale_fill_stepsn(colors = c("#455DB5", "#4575B4", "#74ADD1",  
-                               "#FDAE61", "#F46D43", "#D73027") ,
-                    breaks = c(-20, -10, 0, 10, 20),
-                    na.value = "grey90") +
-  theme(axis.title=element_blank(),
-        axis.text=element_blank(),
-        axis.ticks=element_blank(),
-        strip.text.y=element_text(angle=0),
-        panel.spacing = unit(0, "lines"))
+  ggplot(smooth.df) + aes( day , year, fill = `dat.smooth.fitted`,
+                           z = `dat.smooth.fitted`) + 
+  geom_tile() +
+  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
+                       midpoint = 32) +
+  geom_contour(size = 0.5, color = "grey", breaks = seq(-0, 85, by = 5))
+
 ```
 
 
