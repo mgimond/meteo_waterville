@@ -123,10 +123,12 @@ The following heatmap applies a loess *smooth* surface  to the data. To avoid ed
 
 ```{r fig.height=10,fig.width=8}
 dat.loess <- dat %>% 
+  select(Temp, Date_EST) %>% 
+  na.omit() %>% 
   filter(year(Date_EST) > 2002) %>% 
   mutate(date = as.Date(Date_EST)) %>% 
   group_by(date) %>% 
-  summarise(temp = median(Temp, na.rm = TRUE)) %>% 
+  summarise(temp = mean(Temp, na.rm = TRUE)) %>% 
   ungroup() %>% 
   mutate(dec.year = decimal_date(date),
          year = floor(dec.year),
@@ -147,18 +149,25 @@ dat.loess.post <- dat.loess %>%
 
 dat.lowess.wrap <- rbind(dat.loess, dat.loess.pre, dat.loess.post)
 
-dat.smooth <- loess(temp ~ year + day, dat.lowess.wrap, span = 0.1, degree  = 2,
+dat.smooth <- loess(temp ~ year + day, dat.lowess.wrap, 
+                    span = 0.04, degree  = 2,
                     family = "symmetric")
+
 smooth.df <- data.frame(dat.smooth$x, dat.smooth$fitted) %>% 
   filter(day > 0 & day < 366)
   
-  ggplot(smooth.df) + aes( day , year, fill = `dat.smooth.fitted`,
+  ggplot(smooth.df) + aes( day , year, 
+                           fill = `dat.smooth.fitted`,
                            z = `dat.smooth.fitted`) + 
-  geom_tile() +
-  scale_fill_gradient2(low = "blue", high = "red", mid = "white", 
-                       midpoint = 32) +
-  geom_contour(size = 0.5, color = "grey", breaks = seq(-0, 85, by = 5))
-
+  geom_raster(interpolate = TRUE) +
+  scale_fill_gradientn(colours = terrain.colors(10)) +
+  geom_contour(size = 0.2, color = "#FFB90F", 
+               breaks = seq(0, 100, by = 10)) +
+  geom_vline(xintercept  = c(80, 172, 264), col = "grey70", lty=2 ) +
+  scale_x_continuous(breaks = c(80, 172, 264),
+                     labels = c("Mar 21", "Jun 21", "Sep 21"), 
+                     name = NULL) +
+  scale_y_reverse()
 ```
 
 
