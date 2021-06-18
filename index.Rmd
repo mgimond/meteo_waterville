@@ -20,21 +20,17 @@ The following are examples of exploratory plots generated from meteorological da
 
 The dataset spans the years 1991 through 2020. A data summary follows.
 
-```{r message=FALSE}
+```{r message=FALSE, results='asis'}
 library(MASS)
 library(dplyr)
 library(lubridate)
 library(ggplot2)
-```
 
-```{r}
 dat <- readRDS("met1991_2020.Rds")
-summary(dat)
-```
 
-```{r results='asis'}
-stargazer::stargazer(as.data.frame(dat), type = "html", flip = TRUE, 
-                     title="Descriptive statistics", digits = 2)
+stargazer::stargazer(as.data.frame(dat), type = "html", flip = FALSE, 
+                     title="Descriptive statistics", digits = 2,
+                     mean.sd = FALSE, no.space = FALSE )
 ```
 
 ## Plot of percent missing values
@@ -90,7 +86,7 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
 
 ## Heatmap of smoothed  temperature data
 
-The following heatmap applies a [loess](https://mgimond.github.io/ES218/Week09a.html#How_a_loess_is_constructed) *smooth* surface to the data. This technique helps visualize overall patterns in the two dimensional dataset. As small loess span (\~ `0.04`) is adopted to help capture small (time) scale variations on the data. To avoid edge effects at the beginning and end of each year, the data are wrapped when fitting a loess surface. But wrapping is not applied to the ends of the date ranges (i.e. prior to 2002 and after 2020).
+The following heatmap applies a [loess](https://mgimond.github.io/ES218/Week09a.html#How_a_loess_is_constructed) *smooth* surface to the data. This technique helps visualize overall patterns in the two dimensional dataset. As small loess span (\~ `0.04`) is adopted to help capture small (time) scale variations on the data. To avoid edge effects at the beginning and end of each year, the data are wrapped when fitting a loess surface. But wrapping is not applied to the ends of the date ranges (i.e. prior to 2003 and after 2020). Note that because of the large swaths of missing values, data are restricted to 2003 and up.
 
 ```{r fig.height=8,fig.width=8}
 dat.loess <- dat %>% 
@@ -175,6 +171,7 @@ dat.normalized <- dat %>%
         strip.text.y=element_text(angle=0),
         panel.spacing = unit(0, "lines"))
 ```
+
 
 ## Changes in median temperature values over the years
 

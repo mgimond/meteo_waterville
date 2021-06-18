@@ -203,35 +203,13 @@ pre code {
 <pre class="r"><code>library(MASS)
 library(dplyr)
 library(lubridate)
-library(ggplot2)</code></pre>
-<pre class="r"><code>dat &lt;- readRDS(&quot;met1991_2020.Rds&quot;)
-summary(dat)</code></pre>
-<pre><code>##       Date                        Date_EST                        Temp       
-##  Min.   :1991-08-01 00:00:00   Min.   :1991-07-31 20:00:00   Min.   :-22.00  
-##  1st Qu.:1998-12-31 17:45:00   1st Qu.:1998-12-31 12:45:00   1st Qu.: 30.20  
-##  Median :2006-05-02 11:30:00   Median :2006-05-02 07:30:00   Median : 46.40  
-##  Mean   :2006-05-02 03:01:43   Mean   :2006-05-01 23:01:43   Mean   : 45.11  
-##  3rd Qu.:2013-09-01 05:15:00   3rd Qu.:2013-09-01 01:15:00   3rd Qu.: 60.80  
-##  Max.   :2020-12-31 23:00:00   Max.   :2020-12-31 18:00:00   Max.   : 98.60  
-##                                                              NA&#39;s   :54506   
-##        DP             Speed            Dir            Press       
-##  Min.   :-32.80   Min.   : 0.00   Min.   :  0.0   Min.   : 974.2  
-##  1st Qu.: 19.40   1st Qu.: 3.36   1st Qu.: 10.0   1st Qu.:1012.6  
-##  Median : 35.60   Median : 5.59   Median :190.0   Median :1018.4  
-##  Mean   : 34.11   Mean   : 5.79   Mean   :162.4   Mean   :1018.2  
-##  3rd Qu.: 51.80   3rd Qu.: 8.05   3rd Qu.:290.0   3rd Qu.:1024.2  
-##  Max.   : 80.60   Max.   :40.26   Max.   :360.0   Max.   :1048.2  
-##  NA&#39;s   :55343    NA&#39;s   :54492   NA&#39;s   :59913   NA&#39;s   :214293  
-##    Precip_1hr       Precip_6hr    
-##  Min.   : 0.00    Min.   : 0.00   
-##  1st Qu.: 0.00    1st Qu.: 0.00   
-##  Median : 0.00    Median : 0.01   
-##  Mean   : 0.02    Mean   : 0.11   
-##  3rd Qu.: 0.01    3rd Qu.: 0.09   
-##  Max.   :10.00    Max.   :10.00   
-##  NA&#39;s   :216219   NA&#39;s   :249939</code></pre>
-<pre class="r"><code>stargazer::stargazer(as.data.frame(dat), type = &quot;html&quot;, flip = TRUE, 
-                     title=&quot;Descriptive statistics&quot;, digits = 2)</code></pre>
+library(ggplot2)
+
+dat &lt;- readRDS(&quot;met1991_2020.Rds&quot;)
+
+stargazer::stargazer(as.data.frame(dat), type = &quot;html&quot;, flip = FALSE, 
+                     title=&quot;Descriptive statistics&quot;, digits = 2,
+                     mean.sd = FALSE, no.space = FALSE )</code></pre>
 <table style="text-align:center">
 <caption>
 <strong>Descriptive statistics</strong>
@@ -245,25 +223,25 @@ summary(dat)</code></pre>
 Statistic
 </td>
 <td>
-Temp
+N
 </td>
 <td>
-DP
+Mean
 </td>
 <td>
-Speed
+St. Dev.
 </td>
 <td>
-Dir
+Min
 </td>
 <td>
-Press
+Pctl(25)
 </td>
 <td>
-Precip_1hr
+Pctl(75)
 </td>
 <td>
-Precip_6hr
+Max
 </td>
 </tr>
 <tr>
@@ -272,181 +250,181 @@ Precip_6hr
 </tr>
 <tr>
 <td style="text-align:left">
-N
+Temp
 </td>
 <td>
 202,654
 </td>
 <td>
-201,817
-</td>
-<td>
-202,668
-</td>
-<td>
-197,247
-</td>
-<td>
-42,867
-</td>
-<td>
-40,941
-</td>
-<td>
-7,221
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-Mean
-</td>
-<td>
 45.11
-</td>
-<td>
-34.11
-</td>
-<td>
-5.79
-</td>
-<td>
-162.41
-</td>
-<td>
-1,018.18
-</td>
-<td>
-0.02
-</td>
-<td>
-0.11
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-St. Dev.
 </td>
 <td>
 19.72
 </td>
 <td>
-20.74
-</td>
-<td>
-4.76
-</td>
-<td>
-131.94
-</td>
-<td>
-9.12
-</td>
-<td>
-0.21
-</td>
-<td>
-0.45
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-Min
-</td>
-<td>
 -22.00
-</td>
-<td>
--32.80
-</td>
-<td>
-0.00
-</td>
-<td>
-0.00
-</td>
-<td>
-974.20
-</td>
-<td>
--0.004
-</td>
-<td>
--0.004
-</td>
-</tr>
-<tr>
-<td style="text-align:left">
-Pctl(25)
 </td>
 <td>
 30.20
 </td>
 <td>
-19.40
+60.80
 </td>
 <td>
-3.36
-</td>
-<td>
-10.00
-</td>
-<td>
-1,012.60
-</td>
-<td>
-0.00
-</td>
-<td>
-0.00
+98.60
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
-Pctl(75)
+DP
 </td>
 <td>
-60.80
+201,817
+</td>
+<td>
+34.11
+</td>
+<td>
+20.74
+</td>
+<td>
+-32.80
+</td>
+<td>
+19.40
 </td>
 <td>
 51.80
 </td>
 <td>
+80.60
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Speed
+</td>
+<td>
+202,668
+</td>
+<td>
+5.79
+</td>
+<td>
+4.76
+</td>
+<td>
+0.00
+</td>
+<td>
+3.36
+</td>
+<td>
 8.05
+</td>
+<td>
+40.26
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Dir
+</td>
+<td>
+197,247
+</td>
+<td>
+162.41
+</td>
+<td>
+131.94
+</td>
+<td>
+0.00
+</td>
+<td>
+10.00
 </td>
 <td>
 290.00
 </td>
 <td>
+360.00
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Press
+</td>
+<td>
+42,867
+</td>
+<td>
+1,018.18
+</td>
+<td>
+9.12
+</td>
+<td>
+974.20
+</td>
+<td>
+1,012.60
+</td>
+<td>
 1,024.20
+</td>
+<td>
+1,048.20
+</td>
+</tr>
+<tr>
+<td style="text-align:left">
+Precip_1hr
+</td>
+<td>
+40,941
+</td>
+<td>
+0.02
+</td>
+<td>
+0.21
+</td>
+<td>
+-0.004
+</td>
+<td>
+0.00
 </td>
 <td>
 0.01
 </td>
 <td>
-0.09
+10.00
 </td>
 </tr>
 <tr>
 <td style="text-align:left">
-Max
+Precip_6hr
 </td>
 <td>
-98.60
+7,221
 </td>
 <td>
-80.60
+0.11
 </td>
 <td>
-40.26
+0.45
 </td>
 <td>
-360.00
+-0.004
 </td>
 <td>
-1,048.20
+0.00
 </td>
 <td>
-10.00
+0.09
 </td>
 <td>
 10.00
@@ -506,7 +484,7 @@ Max
 </div>
 <div id="heatmap-of-smoothed-temperature-data" class="section level2">
 <h2>Heatmap of smoothed temperature data</h2>
-<p>The following heatmap applies a <a href="https://mgimond.github.io/ES218/Week09a.html#How_a_loess_is_constructed">loess</a> <em>smooth</em> surface to the data. This technique helps visualize overall patterns in the two dimensional dataset. As small loess span (~ <code>0.04</code>) is adopted to help capture small (time) scale variations on the data. To avoid edge effects at the beginning and end of each year, the data are wrapped when fitting a loess surface. But wrapping is not applied to the ends of the date ranges (i.e. prior to 2002 and after 2020).</p>
+<p>The following heatmap applies a <a href="https://mgimond.github.io/ES218/Week09a.html#How_a_loess_is_constructed">loess</a> <em>smooth</em> surface to the data. This technique helps visualize overall patterns in the two dimensional dataset. As small loess span (~ <code>0.04</code>) is adopted to help capture small (time) scale variations on the data. To avoid edge effects at the beginning and end of each year, the data are wrapped when fitting a loess surface. But wrapping is not applied to the ends of the date ranges (i.e. prior to 2003 and after 2020). Note that because of the large swaths of missing values, data are restricted to 2003 and up.</p>
 <pre class="r"><code>dat.loess &lt;- dat %&gt;% 
   select(Temp, Date_EST) %&gt;% 
   na.omit() %&gt;% 
