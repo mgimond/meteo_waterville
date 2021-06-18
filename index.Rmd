@@ -5,7 +5,7 @@ date:  "`r format(Sys.time(), '%B %d, %Y')`"
 output: 
    html_document:
      toc : TRUE
-     code_folding: show
+     code_folding: hide
 editor_options: 
   chunk_output_type: console
 ---
@@ -14,7 +14,7 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
-The following are examples of exploratory plots generated from meteorological data for Waterville, Maine (USA). Data were pulled from ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-lite/ then saved in a native R file format named `met1991_2020.Rds` available on this [repo](https://github.com/mgimond/meteo_waterville) using the `Meteo_lite.R` script (also available on this [repo](https://github.com/mgimond/meteo_waterville)).
+The following are examples of exploratory plots generated from meteorological data for Waterville, Maine (USA). Data were pulled from <ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-lite/> then saved in a native R file format named `met1991_2020.Rds` available on this [repo](https://github.com/mgimond/meteo_waterville) using the `Meteo_lite.R` script (also available on this [repo](https://github.com/mgimond/meteo_waterville)).
 
 ## Data summary
 
@@ -30,6 +30,11 @@ library(ggplot2)
 ```{r}
 dat <- readRDS("met1991_2020.Rds")
 summary(dat)
+```
+
+```{r results='asis'}
+stargazer::stargazer(as.data.frame(dat), type = "html", flip = TRUE, 
+                     title="Descriptive statistics", digits = 2)
 ```
 
 ## Plot of percent missing values
@@ -83,45 +88,11 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
         panel.spacing = unit(0, "lines"))
 ```
 
+## Heatmap of smoothed  temperature data
 
-## Heatmap of normalized temperature data
+The following heatmap applies a [loess](https://mgimond.github.io/ES218/Week09a.html#How_a_loess_is_constructed) *smooth* surface to the data. This technique helps visualize overall patterns in the two dimensional dataset. As small loess span (\~ `0.04`) is adopted to help capture small (time) scale variations on the data. To avoid edge effects at the beginning and end of each year, the data are wrapped when fitting a loess surface. But wrapping is not applied to the ends of the date ranges (i.e. prior to 2002 and after 2020).
 
-The following heatmap shows the difference between reported daily median temperature (in degrees Fahrenheit) and the ~30 year median temperature for that day.
-
-```{r fig.height=10,fig.width=8}
-dat.normalized <- dat %>% 
-  mutate(missing = as.numeric(is.na(Temp)),
-         month = month(Date_EST, label=TRUE,abbr=TRUE),
-         year  = year(Date_EST),
-         weekday = wday(Date_EST,label=TRUE),
-         monthw = ceiling(day(Date_EST) / 7) ) %>% 
-  group_by(month,year,weekday,monthw) %>% 
-  summarise(percent = mean(missing) * 100,
-            Temp = ifelse(percent > 70, NA, median(Temp, na.rm=TRUE))) %>%
-  ungroup() %>% 
-  group_by(month,monthw,weekday) %>% 
-  mutate(`Temperature anomaly` = Temp - median(Temp, na.rm=TRUE))
-
-  ggplot(dat.normalized) + aes( weekday,monthw, fill = `Temperature anomaly`) + 
-  geom_tile(colour = "white") + 
-  facet_grid(year ~ month) + 
-  scale_fill_stepsn(colors = c("#455DB5", "#4575B4", "#74ADD1",  
-                               "#FDAE61", "#F46D43", "#D73027") ,
-                    breaks = c(-20, -10, 0, 10, 20),
-                    na.value = "grey90") +
-  theme(axis.title=element_blank(),
-        axis.text=element_blank(),
-        axis.ticks=element_blank(),
-        strip.text.y=element_text(angle=0),
-        panel.spacing = unit(0, "lines"))
-```
-
-
-## Smooth of normalized temperature data
-
-The following heatmap applies a loess *smooth* surface  to the data. To avoid edge effects at the beginning and end of each year, the data are wrapped.
-
-```{r fig.height=10,fig.width=8}
+```{r fig.height=8,fig.width=8}
 dat.loess <- dat %>% 
   select(Temp, Date_EST) %>% 
   na.omit() %>% 
@@ -160,16 +131,50 @@ smooth.df <- data.frame(dat.smooth$x, dat.smooth$fitted) %>%
                            fill = `dat.smooth.fitted`,
                            z = `dat.smooth.fitted`) + 
   geom_raster(interpolate = TRUE) +
-  scale_fill_gradientn(colours = terrain.colors(10)) +
-  geom_contour(size = 0.2, color = "#FFB90F", 
-               breaks = seq(0, 100, by = 10)) +
-  geom_vline(xintercept  = c(80, 172, 264), col = "grey70", lty=2 ) +
+ # scale_fill_gradientn(colours = terrain.colors(10)) +
+  scico::scale_fill_scico(palette = "romaO", direction = -1, name = "Mean Temperature") +
+  geom_contour(size = 0.2, color = "#EE9A00", 
+               breaks = seq(0, 100, by = 7)) +
+  geom_vline(xintercept  = c(80, 172, 264), col = "grey90", lty=2 ) +
   scale_x_continuous(breaks = c(80, 172, 264),
                      labels = c("Mar 21", "Jun 21", "Sep 21"), 
                      name = NULL) +
   scale_y_reverse()
 ```
 
+A few noteworthy observations is the increase in mean temperatures for the winter months and an increase in temperatures around mid-summer.
+
+## Heatmap of normalized temperature data
+
+The following heatmap shows the difference between reported daily median temperature (in degrees Fahrenheit) and the \~30 year median temperature for that day.
+
+```{r fig.height=10,fig.width=8}
+dat.normalized <- dat %>% 
+  mutate(missing = as.numeric(is.na(Temp)),
+         month = month(Date_EST, label=TRUE,abbr=TRUE),
+         year  = year(Date_EST),
+         weekday = wday(Date_EST,label=TRUE),
+         monthw = ceiling(day(Date_EST) / 7) ) %>% 
+  group_by(month,year,weekday,monthw) %>% 
+  summarise(percent = mean(missing) * 100,
+            Temp = ifelse(percent > 70, NA, median(Temp, na.rm=TRUE))) %>%
+  ungroup() %>% 
+  group_by(month,monthw,weekday) %>% 
+  mutate(`Temperature anomaly` = Temp - median(Temp, na.rm=TRUE))
+
+  ggplot(dat.normalized) + aes( weekday,monthw, fill = `Temperature anomaly`) + 
+  geom_tile(colour = "white") + 
+  facet_grid(year ~ month) + 
+  scale_fill_stepsn(colors = c("#455DB5", "#4575B4", "#74ADD1",  
+                               "#FDAE61", "#F46D43", "#D73027") ,
+                    breaks = c(-20, -10, 0, 10, 20),
+                    na.value = "grey90") +
+  theme(axis.title=element_blank(),
+        axis.text=element_blank(),
+        axis.ticks=element_blank(),
+        strip.text.y=element_text(angle=0),
+        panel.spacing = unit(0, "lines"))
+```
 
 ## Changes in median temperature values over the years
 
@@ -236,5 +241,6 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
 
 ```
 
--------
+------------------------------------------------------------------------
+
 ![Copyleft](http://i.creativecommons.org/l/by-sa/4.0/88x31.png) Manuel Gimond, 2021
