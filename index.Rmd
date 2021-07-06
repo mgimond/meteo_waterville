@@ -16,7 +16,7 @@ knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 
 The following are examples of exploratory plots generated from meteorological data for Waterville, Maine (USA). Data were pulled from <ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-lite/> then saved in a native R file format named `met1991_2020.Rds` available on this [repo](https://github.com/mgimond/meteo_waterville) using the `Meteo_lite.R` script (also available on this [repo](https://github.com/mgimond/meteo_waterville)).
 
-## Data summary
+# Data summary
 
 The dataset spans the years 1991 through 2020. A data summary follows.
 
@@ -32,6 +32,9 @@ stargazer::stargazer(as.data.frame(dat), type = "html", flip = FALSE,
                      title="Descriptive statistics", digits = 2,
                      mean.sd = FALSE, no.space = FALSE )
 ```
+
+
+# Temperature exploratory analysis
 
 ## Plot of percent missing values
 
@@ -173,7 +176,7 @@ dat.normalized <- dat %>%
 ```
 
 
-## Changes in median temperature values over the years
+## Change in median temperature values over the years
 
 The following plots show median monthly temperatures per year. Only months with 30% or fewer missing values are displayed. A resistant straight line and a resistant LOESS curve are fitted to the data.
 
@@ -195,7 +198,7 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
 
 The missing values for the years 1996 through 1999 create a gap in the data which could influence the LOESS curve however, the straight line fit should be resistant to the imbalanced distribution of values.
 
-## Changes in high temperature values over the years
+## Change in high temperature values over the years
 
 The following plots show the median monthly top 10% temperature values per year. Only months with 30% or fewer missing values are displayed. A resistant straight line and a resistant LOESS curve are fitted to the data.
 
@@ -216,7 +219,7 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
   ggtitle(expression("Median top 10% temperature (in " * degree * "F)"))
 ```
 
-## Changes in low temperature values over the years
+## Change in low temperature values over the years
 
 The following plots show the median monthly bottom 10% temperature values per year. Only months with 30% or fewer missing values are displayed. A resistant straight line and a resistant LOESS curve are fitted to the data.
 
@@ -235,6 +238,72 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
               method.args = list(family="symmetric")) +
   geom_smooth(method="rlm", colour="red",  se=FALSE, size=0.5) +
   ggtitle(expression("Median bottom 10% temperature (in " * degree * "F)"))
+
+```
+
+# Dewpoint exploratory analysis
+
+## Change in median dewpoint values over the years
+
+The following plots show median monthly dewpoints per year. Only months with 30% or fewer missing values are displayed. A resistant straight line and a resistant LOESS curve are fitted to the data.
+
+```{r fig.height=5,fig.width=7}
+dat %>% mutate(missing = as.numeric(is.na(DP)),
+               month = month(Date_EST, label=TRUE,abbr=TRUE),
+               Year  = year(Date_EST)) %>% 
+  #        filter(month %in% c("Feb","May","Aug","Oct") )%>% 
+  group_by(month,Year)         %>% 
+  summarise(percent = mean(missing) * 100,
+            DP = ifelse(percent > 30, NA, median(DP, na.rm=TRUE))) %>% 
+  ggplot() + aes(x=Year, y=DP) +geom_point() +
+  facet_wrap(month~., scales="free", ncol = 4) + 
+  geom_smooth(method = "loess", se=FALSE, size=0.5, 
+              method.args = list(family="symmetric")) +
+  geom_smooth(method="rlm", colour="red",  se=FALSE, size=0.5) + 
+  ggtitle(expression("Median yearly dewpoint (in " * degree * "F)"))
+```
+
+
+## Change in high dewpoint values over the years
+
+The following plots show the median monthly top 10% dewpoint values per year. Only months with 30% or fewer missing values are displayed. A resistant straight line and a resistant LOESS curve are fitted to the data.
+
+```{r fig.height=5,fig.width=7}
+dat %>% mutate(missing = as.numeric(is.na(DP)),
+               month = month(Date_EST, label=TRUE,abbr=TRUE),
+               Year  = year(Date_EST)) %>% 
+ # filter(month %in% c("Feb","May","Aug","Oct")) %>% 
+  group_by(month,Year)         %>% 
+  summarise(percent = mean(missing) * 100,
+            topDP = median(DP[percent_rank(DP) > 0.9], na.rm=TRUE),
+            DP = ifelse(percent > 30, NA, topDP)) %>% 
+  ggplot() + aes(x=Year, y=DP) +geom_point() +
+  facet_wrap(month~., scales="free", ncol = 4) + 
+  geom_smooth(method="loess", se=FALSE, size=0.5, 
+              method.args = list(family="symmetric")) +
+  geom_smooth(method="rlm", colour="red",  se=FALSE, size=0.5) +
+  ggtitle(expression("Median top 10% dewpoint (in " * degree * "F)"))
+```
+
+## Change in low dewpoint values over the years
+
+The following plots show the median monthly bottom 10% dewpoint values per year. Only months with 30% or fewer missing values are displayed. A resistant straight line and a resistant LOESS curve are fitted to the data.
+
+```{r fig.height=5,fig.width=7}
+dat %>% mutate(missing = as.numeric(is.na(DP)),
+               month = month(Date_EST, label=TRUE,abbr=TRUE),
+               Year  = year(Date_EST)) %>% 
+ # filter(month %in% c("Feb","May","Aug","Oct")) %>% 
+  group_by(month,Year)         %>% 
+  summarise(percent = mean(missing) * 100,
+            botDP = median(DP[percent_rank(DP) < 0.1], na.rm=TRUE),
+            DP = ifelse(percent > 30, NA, botDP)) %>% 
+  ggplot() + aes(x=Year, y=DP) +geom_point() +
+  facet_wrap(month ~ ., scales="free", ncol = 4) + 
+  geom_smooth(method="loess", se=FALSE, size=0.5, 
+              method.args = list(family="symmetric")) +
+  geom_smooth(method="rlm", colour="red",  se=FALSE, size=0.5) +
+  ggtitle(expression("Median bottom 10% dewpoint (in " * degree * "F)"))
 
 ```
 
