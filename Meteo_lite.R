@@ -10,7 +10,7 @@ library(tidyr)
 
 # Create the list of links
 link <- "ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-lite/"
-yr <- 1991:2020 
+yr <- 1991:2021 
 YM <- ifelse(yr > 2005, paste(link,yr,"/","726073-14615-",yr,".gz",sep="" ),
                         paste(link,yr,"/","726073-99999-",yr,".gz",sep="" ))
 
@@ -49,5 +49,5 @@ for(i in YM) {
   Sys.sleep(4) 
 }
 
-saveRDS(dat,"met1991_2020.Rds")
+saveRDS(dat,"met1991_2021.Rds")
 
