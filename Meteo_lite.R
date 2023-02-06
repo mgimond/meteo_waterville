@@ -10,21 +10,21 @@ library(tidyr)
 
 # Create the list of links
 link <- "ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-lite/"
-yr <- 1991:2021 
+yr <- 1991:2022 
 YM <- ifelse(yr > 2005, paste(link,yr,"/","726073-14615-",yr,".gz",sep="" ),
-                        paste(link,yr,"/","726073-99999-",yr,".gz",sep="" ))
+             paste(link,yr,"/","726073-99999-",yr,".gz",sep="" ))
 
 # Define the column names
 col.names <- c("year","month", "day", "hour", "temp", "dp", "press", "Dir", 
-                 "speed", "sky", "precip_1hr", "precip_6hr")
+               "speed", "sky", "precip_1hr", "precip_6hr")
 
 dat <- data.frame()  
 for(i in YM) {
   df <- read_fwf(i, col_types="iiiinnnnnnnn",
-                   fwf_widths(c(4,3,3,3,6,6,6,6,6,6,6,6),
-                              col_names = col.names),
-                   na = "-9999")
-
+                 fwf_widths(c(4,3,3,3,6,6,6,6,6,6,6,6),
+                            col_names = col.names),
+                 na = "-9999")
+  
   
   # Add missing combinations of month, day, year
   df1 <- df %>%  complete(year,month,day,hour) 
@@ -49,5 +49,5 @@ for(i in YM) {
   Sys.sleep(4) 
 }
 
-saveRDS(dat,"met1991_2021.Rds")
+saveRDS(dat,"met1991_2022.Rds")
 
