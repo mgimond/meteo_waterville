@@ -14,11 +14,11 @@ editor_options:
 knitr::opts_chunk$set(echo = TRUE, warning=FALSE, message=FALSE)
 ```
 
-The following are examples of exploratory plots generated from meteorological data for Waterville, Maine (USA). Data were pulled from <ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-lite/> then saved in a native R file format named `met1991_2023.Rds` available on this [repo](https://github.com/mgimond/meteo_waterville) using the `Meteo_lite.R` script (also available on this [repo](https://github.com/mgimond/meteo_waterville)).
+The following are examples of exploratory plots generated from meteorological data for Waterville, Maine (USA). Data were pulled from <ftp://ftp.ncdc.noaa.gov/pub/data/noaa/isd-lite/> then saved in a native R file format named `met1991_2024.Rds` available on this [repo](https://github.com/mgimond/meteo_waterville) using the `Meteo_lite.R` script (also available on this [repo](https://github.com/mgimond/meteo_waterville)).
 
 # Data summary
 
-The dataset spans the years 1991 through 2023. A data summary follows.
+The dataset spans the years 1991 through 2024. A data summary follows.
 
 ```{r message=FALSE, results='asis'}
 library(MASS)
@@ -26,7 +26,7 @@ library(dplyr)
 library(lubridate)
 library(ggplot2)
 
-dat <- readRDS("met1991_2023.Rds")
+dat <- readRDS("met1991_2024.Rds")
 
 stargazer::stargazer(as.data.frame(dat), type = "html", flip = FALSE, 
                      title="Descriptive statistics", digits = 2,
@@ -89,7 +89,7 @@ dat %>% mutate(missing = as.numeric(is.na(Temp)),
 
 ## Heatmap of smoothed  temperature data
 
-The following heatmap applies a [loess](https://mgimond.github.io/ES218/Week09a.html#How_a_loess_is_constructed) *smooth* surface to the data. This technique helps visualize overall patterns in the two dimensional dataset. As small loess span (\~ `0.04`) is adopted to help capture small (time) scale variations on the data. To avoid edge effects at the beginning and end of each year, the data are wrapped when fitting a loess surface. But wrapping is not applied to the ends of the date ranges (i.e. prior to 2003 and after 2023). Note that because of the large swaths of missing values, data are restricted to 2003 and up.
+The following heatmap applies a [loess](https://mgimond.github.io/ES218/Week09a.html#How_a_loess_is_constructed) *smooth* surface to the data. This technique helps visualize overall patterns in the two dimensional dataset. As small loess span (\~ `0.04`) is adopted to help capture small (time) scale variations on the data. To avoid edge effects at the beginning and end of each year, the data are wrapped when fitting a loess surface. But wrapping is not applied to the ends of the date ranges (i.e. prior to 2003 and after 2024). Note that because of the large swaths of missing values, data are restricted to 2003 and up.
 
 ```{r fig.height=8,fig.width=8}
 dat.loess <- dat %>% 
@@ -309,4 +309,4 @@ dat %>% mutate(missing = as.numeric(is.na(DP)),
 
 ------------------------------------------------------------------------
 
-![Copyleft](http://i.creativecommons.org/l/by-sa/4.0/88x31.png) Manuel Gimond, 2023
+![Copyleft](http://i.creativecommons.org/l/by-sa/4.0/88x31.png) Manuel Gimond, 2025
